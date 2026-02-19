@@ -1,5 +1,8 @@
 package com.github.ecommerce_project.models;
 
+import java.math.BigDecimal;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,10 +25,16 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    String name;
+    @Column(nullable = false)
+    private String name;
 
-    private Double price;
+    @Column(length = 1000)
+    private String description;
 
-    public Product(String name, Double price) {
-    }
+    @Column(nullable = false)
+    private BigDecimal price;
+
+    @Column(nullable = false)
+    private Integer stockQuantity;
+
 }
