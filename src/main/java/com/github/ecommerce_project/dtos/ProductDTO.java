@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductDTO {
+public class ProductDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;

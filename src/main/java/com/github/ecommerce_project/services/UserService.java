@@ -1,51 +1,54 @@
 package com.github.ecommerce_project.services;
 
-import com.github.ecommerce_project.dtos.UserRegistrationDTO;
-import com.github.ecommerce_project.dtos.UserResponseDTO;
+import com.github.ecommerce_project.dtos.UserRegistrationDto;
+import com.github.ecommerce_project.dtos.UserResponseDto;
+import com.github.ecommerce_project.exceptions.DataNotFoundException;
+import com.github.ecommerce_project.mapper.UserMapper;
 import com.github.ecommerce_project.models.User;
 import com.github.ecommerce_project.repositories.UserRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
 
-    private final PasswordEncoder passwordEncoder;
-
     private UserRepository userRepository;
+    private UserMapper userMapper;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
-    public UserResponseDTO registerUser(UserRegistrationDTO newUserDTO) {
-        if (userRepository.existsByUsername(newUserDTO.getUsername())) {
+    @Transactional
+    public UserResponseDto registerUser(UserRegistrationDto newUserDto) {
+
+        if (userRepository.existsByUsername(newUserDto.getUsername())) {
             throw new IllegalArgumentException("Username already exists.");
         }
-        if (userRepository.existsByEmail(newUserDTO.getEmail())) {
-            throw new IllegalArgumentException("Email already exists.");
+        if (userRepository.existsByEmail(newUserDto.getEmail())) {
+            throw new IllegalArgumentException("Email already exists");
         }
 
-        String hashed = passwordEncoder.encode(newUserDTO.getPassword());
-        User newUser = User.builder()
-                .username(newUserDTO.getUsername())
-                .email(newUserDTO.getEmail())
-                .firstname(newUserDTO.getFirstname())
-                .lastname(newUserDTO.getLastname())
-                .password(hashed)
-                .build();
+        User newUser = userMapper.toUser(newUserDto);
+        User savedUser = userRepository.save(newUser);
+        return userMapper.toDto(savedUser);
+    }
 
-        userRepository.save(newUser);
+    @Transactional(readOnly = true)
+    public UserResponseDto getUserById(Long id) {
+        return userRepository.findById(id)
+                .map(userMapper::toDto)
+                .orElseThrow(() -> new DataNotFoundException("User ID not found"));
+    }
 
-        return UserResponseDTO.builder()
-                .id(newUser.getId())
-                .username(newUser.getUsername())
-                .email(newUser.getEmail())
-                .firstname(newUser.getFirstname())
-                .lastname(newUser.getLastname())
-                .build();
+    @Transactional(readOnly = true)
+    public Page<UserResponseDto> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(userMapper::toDto);
     }
 
 }
