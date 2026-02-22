@@ -14,6 +14,6 @@ public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "password", source = "password", qualifiedBy = EncodedMapping.class)
-    User toEntity(UserRegistrationDto dto);
+    User toUser(UserRegistrationDto dto);
 
 }

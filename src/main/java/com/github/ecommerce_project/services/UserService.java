@@ -9,7 +9,6 @@ import com.github.ecommerce_project.repositories.UserRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,15 +18,11 @@ public class UserService {
     private UserRepository userRepository;
     private UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-    }
-
     @Transactional
     public UserResponseDto registerUser(UserRegistrationDto newUserDto) {
 
         if (userRepository.existsByUsername(newUserDto.getUsername())) {
-            throw new IllegalArgumentException("Username already exists.");
+            throw new IllegalArgumentException("Username already exists");
         }
         if (userRepository.existsByEmail(newUserDto.getEmail())) {
             throw new IllegalArgumentException("Email already exists");

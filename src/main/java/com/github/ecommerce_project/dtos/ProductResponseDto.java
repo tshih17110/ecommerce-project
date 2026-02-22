@@ -1,5 +1,7 @@
 package com.github.ecommerce_project.dtos;
 
+import java.math.BigDecimal;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,16 +11,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserResponseDto {
+public class ProductResponseDto {
 
     private Long id;
 
-    private String username;
+    private String name;
 
-    private String firstname;
+    private String description;
 
-    private String lastname;
+    private BigDecimal price;
 
-    private String email;
+    private boolean inStock;
 
 }
