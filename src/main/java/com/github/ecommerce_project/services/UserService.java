@@ -1,7 +1,7 @@
 package com.github.ecommerce_project.services;
 
-import com.github.ecommerce_project.dtos.UserRegistrationDto;
-import com.github.ecommerce_project.dtos.UserResponseDto;
+import com.github.ecommerce_project.dtos.user.UserRegistrationDto;
+import com.github.ecommerce_project.dtos.user.UserResponseDto;
 import com.github.ecommerce_project.exceptions.DataNotFoundException;
 import com.github.ecommerce_project.mapper.UserMapper;
 import com.github.ecommerce_project.models.User;

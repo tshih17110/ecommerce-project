@@ -1,4 +1,4 @@
-package com.github.ecommerce_project.dtos;
+package com.github.ecommerce_project.dtos.product;
 
 import java.math.BigDecimal;
 

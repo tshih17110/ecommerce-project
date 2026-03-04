@@ -3,8 +3,8 @@ package com.github.ecommerce_project.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import com.github.ecommerce_project.dtos.UserRegistrationDto;
-import com.github.ecommerce_project.dtos.UserResponseDto;
+import com.github.ecommerce_project.dtos.user.UserRegistrationDto;
+import com.github.ecommerce_project.dtos.user.UserResponseDto;
 import com.github.ecommerce_project.models.User;
 
 @Mapper(componentModel = "spring", uses = PasswordEncodingMapper.class)

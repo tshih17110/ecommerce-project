@@ -3,8 +3,8 @@ package com.github.ecommerce_project.services;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.github.ecommerce_project.dtos.ProductRequestDto;
-import com.github.ecommerce_project.dtos.ProductResponseDto;
+import com.github.ecommerce_project.dtos.product.ProductRequestDto;
+import com.github.ecommerce_project.dtos.product.ProductResponseDto;
 import com.github.ecommerce_project.exceptions.DataNotFoundException;
 import com.github.ecommerce_project.mapper.ProductMapper;
 import com.github.ecommerce_project.models.Product;

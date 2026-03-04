@@ -1,4 +1,4 @@
-package com.github.ecommerce_project.dtos;
+package com.github.ecommerce_project.dtos.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

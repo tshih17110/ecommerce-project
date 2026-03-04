@@ -4,8 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-import com.github.ecommerce_project.dtos.ProductRequestDto;
-import com.github.ecommerce_project.dtos.ProductResponseDto;
+import com.github.ecommerce_project.dtos.product.ProductRequestDto;
+import com.github.ecommerce_project.dtos.product.ProductResponseDto;
 import com.github.ecommerce_project.models.Product;
 
 @Mapper(componentModel = "spring")
