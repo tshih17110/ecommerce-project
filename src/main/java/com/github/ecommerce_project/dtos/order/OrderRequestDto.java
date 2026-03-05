@@ -2,8 +2,9 @@ package com.github.ecommerce_project.dtos.order;
 
 import java.util.List;
 
-import com.github.ecommerce_project.dtos.orderItem.OrderItemResponseDto;
+import com.github.ecommerce_project.dtos.orderItem.OrderItemRequestDto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,6 @@ public class OrderRequestDto {
     private String address;
 
     @NotEmpty
-    private List<OrderItemResponseDto> orderItems;
+    private List<@Valid OrderItemRequestDto> orderItems;
 
 }
