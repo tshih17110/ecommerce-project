@@ -1,6 +1,6 @@
 package com.github.ecommerce_project.services;
 
-import com.github.ecommerce_project.dtos.user.UserRegistrationDto;
+import com.github.ecommerce_project.dtos.user.UserRequestDto;
 import com.github.ecommerce_project.dtos.user.UserResponseDto;
 import com.github.ecommerce_project.exceptions.DataNotFoundException;
 import com.github.ecommerce_project.mapper.UserMapper;
@@ -19,7 +19,7 @@ public class UserService {
     private UserMapper userMapper;
 
     @Transactional
-    public UserResponseDto registerUser(UserRegistrationDto newUserDto) {
+    public UserResponseDto registerUser(UserRequestDto newUserDto) {
 
         if (userRepository.existsByUsername(newUserDto.getUsername())) {
             throw new IllegalArgumentException("Username already exists");
