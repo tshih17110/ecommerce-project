@@ -19,12 +19,15 @@ import com.github.ecommerce_project.models.enums.OrderStatus;
 import com.github.ecommerce_project.repositories.OrderRepository;
 import com.github.ecommerce_project.repositories.ProductRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class OrderService {
 
-    private OrderRepository orderRepository;
-    private ProductRepository productRepository;
-    private OrderMapper orderMapper;
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final OrderMapper orderMapper;
 
     @Transactional
     public OrderResponseDto createOrder(OrderRequestDto newOrderDto) {

@@ -7,16 +7,19 @@ import com.github.ecommerce_project.mapper.UserMapper;
 import com.github.ecommerce_project.models.User;
 import com.github.ecommerce_project.repositories.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    private UserRepository userRepository;
-    private UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Transactional
     public UserResponseDto registerUser(UserRequestDto newUserDto) {

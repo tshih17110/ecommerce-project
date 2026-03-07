@@ -10,11 +10,14 @@ import com.github.ecommerce_project.mapper.ProductMapper;
 import com.github.ecommerce_project.models.Product;
 import com.github.ecommerce_project.repositories.ProductRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
-    private ProductRepository productRepository;
-    private ProductMapper productMapper;
+    private final ProductRepository productRepository;
+    private final ProductMapper productMapper;
 
     @Transactional
     public ProductResponseDto createProduct(ProductRequestDto newProductDto) {
