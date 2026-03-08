@@ -18,5 +18,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByPriceBetween(BigDecimal min, BigDecimal max, Pageable pageable);
 
-    Page<Product> findByProductId(Long productId, Pageable pageable);
 }

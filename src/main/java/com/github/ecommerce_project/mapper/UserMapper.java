@@ -2,6 +2,7 @@ package com.github.ecommerce_project.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import com.github.ecommerce_project.dtos.user.UserRequestDto;
 import com.github.ecommerce_project.dtos.user.UserResponseDto;
@@ -14,4 +15,7 @@ public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
     User toUser(UserRequestDto dto);
+
+    @Mapping(target = "id", ignore = true)
+    void updateUser(UserRequestDto dto, @MappingTarget User user);
 }
