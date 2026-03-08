@@ -25,10 +25,10 @@ public class UserService {
     public UserResponseDto registerUser(UserRequestDto newUserDto) {
 
         if (userRepository.existsByUsername(newUserDto.getUsername())) {
-            throw new IllegalArgumentException("Username already exists");
+            throw new IllegalArgumentException("Username already exists.");
         }
         if (userRepository.existsByEmail(newUserDto.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new IllegalArgumentException("Email already exists.");
         }
 
         User newUser = userMapper.toUser(newUserDto);
@@ -56,7 +56,7 @@ public class UserService {
     @Transactional
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new DataNotFoundException("User ID not found");
+            throw new DataNotFoundException("User ID not found.");
         }
         userRepository.deleteById(id);
     }
@@ -65,7 +65,7 @@ public class UserService {
     public UserResponseDto getUserById(Long id) {
         return userRepository.findById(id)
                 .map(userMapper::toDto)
-                .orElseThrow(() -> new DataNotFoundException("User ID not found"));
+                .orElseThrow(() -> new DataNotFoundException("User ID not found."));
     }
 
     @Transactional(readOnly = true)

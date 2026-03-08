@@ -1,5 +1,7 @@
 package com.github.ecommerce_project.services;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,9 +32,16 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Product getProductDetails(Long id) {
+    public ProductResponseDto getProductDetails(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Product not found"));
+                .map(productMapper::toDto)
+                .orElseThrow(() -> new DataNotFoundException("Product ID not found."));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(productMapper::toDto);
     }
 
     @Transactional
@@ -47,6 +56,14 @@ public class ProductService {
 
         // Save and return updated product
         return productMapper.toDto(productRepository.save(existingProduct));
+    }
+
+    @Transactional
+    public void deleteProduct(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new DataNotFoundException("Product not found.");
+        }
+        productRepository.deleteById(id);
     }
 
 }

@@ -1,6 +1,5 @@
 package com.github.ecommerce_project.controllers;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -29,7 +28,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDto> regsiter(@Valid @RequestBody UserRequestDto request) {
+    public ResponseEntity<UserResponseDto> register(@Valid @RequestBody UserRequestDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerUser(request));
     }
 
