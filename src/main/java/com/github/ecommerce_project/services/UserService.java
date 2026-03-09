@@ -1,16 +1,24 @@
 package com.github.ecommerce_project.services;
 
+import com.github.ecommerce_project.dtos.auth.AuthResponseDto;
+import com.github.ecommerce_project.dtos.auth.LoginRequestDto;
 import com.github.ecommerce_project.dtos.user.UserRequestDto;
 import com.github.ecommerce_project.dtos.user.UserResponseDto;
 import com.github.ecommerce_project.exceptions.DataNotFoundException;
 import com.github.ecommerce_project.mapper.UserMapper;
 import com.github.ecommerce_project.models.User;
+import com.github.ecommerce_project.models.enums.Role;
 import com.github.ecommerce_project.repositories.UserRepository;
+import com.github.ecommerce_project.utils.JwtUtils;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +28,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final JwtUtils jwtUtils;
+    private final AuthenticationManager authenticationManager;
 
     @Transactional
     public UserResponseDto registerUser(UserRequestDto newUserDto) {
@@ -32,8 +42,20 @@ public class UserService {
         }
 
         User newUser = userMapper.toUser(newUserDto);
-        User savedUser = userRepository.save(newUser);
-        return userMapper.toDto(savedUser);
+        newUser.setRoles(Set.of(Role.ROLE_CUSTOMER));
+        return userMapper.toDto(userRepository.save(newUser));
+    }
+
+    @Transactional
+    public AuthResponseDto login(LoginRequestDto request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new DataNotFoundException("User not found."));
+        return AuthResponseDto.builder()
+                .token(jwtUtils.generateToken(user))
+                .user(userMapper.toDto(user))
+                .build();
     }
 
     @Transactional
