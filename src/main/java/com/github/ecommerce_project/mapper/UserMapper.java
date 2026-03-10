@@ -15,6 +15,7 @@ public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "roles", ignore = true)
+    @Mapping(target = "password", qualifiedBy = EncodedMapping.class)
     User toUser(UserRequestDto dto);
 
     @Mapping(target = "id", ignore = true)
