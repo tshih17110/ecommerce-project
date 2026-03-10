@@ -14,7 +14,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     boolean existsByName(String name);
 
-    Page<Product> findByNameContainingIgnoreCase(String name);
+    Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
     Page<Product> findByPriceBetween(BigDecimal min, BigDecimal max, Pageable pageable);
 

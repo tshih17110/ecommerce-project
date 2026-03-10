@@ -52,6 +52,11 @@ public class OrderService {
             Product product = productRepository.findById(itemDto.getProductId())
                     .orElseThrow(() -> new DataNotFoundException("Product not found."));
 
+            validateStock(product, itemDto.getQuantity());
+
+            product.setStockQuantity(product.getStockQuantity() - itemDto.getQuantity());
+            productRepository.save(product);
+
             OrderItem item = OrderItem.builder()
                     .product(product)
                     .quantity(itemDto.getQuantity())
@@ -137,6 +142,13 @@ public class OrderService {
 
     private String generateOrderNumber() {
         return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private void validateStock(Product product, int requestedQuantity) {
+        if (product.getStockQuantity() < requestedQuantity) {
+            throw new IllegalArgumentException(
+                    "Insufficient stock for " + product.getName() + ". " + product.getStockQuantity() + " available.");
+        }
     }
 
 }

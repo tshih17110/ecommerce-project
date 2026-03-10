@@ -40,13 +40,17 @@ public class CartService {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new DataNotFoundException("Product not found."));
 
+        validateStock(product, request.getQuantity());
+
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(product.getId()))
                 .findFirst();
 
         // Update quantity if item already in cart
         if (existingItem.isPresent()) {
-            existingItem.get().setQuantity(existingItem.get().getQuantity() + request.getQuantity());
+            int newQuantity = existingItem.get().getQuantity() + request.getQuantity();
+            validateStock(product, newQuantity);
+            existingItem.get().setQuantity(newQuantity);
         } else {
             CartItem newItem = CartItem.builder()
                     .cart(cart)
@@ -144,6 +148,13 @@ public class CartService {
         return cart.getItems().stream()
                 .map(CartItem::getQuantity)
                 .reduce(0, Integer::sum);
+    }
+
+    private void validateStock(Product product, int requestedQuantity) {
+        if (product.getStockQuantity() < requestedQuantity) {
+            throw new IllegalArgumentException(
+                    "Insufficient stock for " + product.getName() + ". " + product.getStockQuantity() + " available.");
+        }
     }
 
 }
