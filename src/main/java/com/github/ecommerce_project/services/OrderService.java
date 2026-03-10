@@ -1,9 +1,12 @@
 package com.github.ecommerce_project.services;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,9 +18,12 @@ import com.github.ecommerce_project.mapper.OrderMapper;
 import com.github.ecommerce_project.models.Order;
 import com.github.ecommerce_project.models.OrderItem;
 import com.github.ecommerce_project.models.Product;
+import com.github.ecommerce_project.models.User;
 import com.github.ecommerce_project.models.enums.OrderStatus;
 import com.github.ecommerce_project.repositories.OrderRepository;
 import com.github.ecommerce_project.repositories.ProductRepository;
+import com.github.ecommerce_project.repositories.UserRepository;
+import com.github.ecommerce_project.utils.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,19 +33,24 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
     private final OrderMapper orderMapper;
 
     @Transactional
-    public OrderResponseDto createOrder(OrderRequestDto newOrderDto) {
+    public OrderResponseDto createOrder(Long userId, OrderRequestDto newOrderDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("User not found."));
 
         Order order = new Order();
+        order.setUser(user);
         order.setStatus(OrderStatus.PENDING);
         order.setAddress(newOrderDto.getAddress());
+        order.setOrderNumber(generateOrderNumber());
 
         BigDecimal total = BigDecimal.ZERO;
         for (OrderItemRequestDto itemDto : newOrderDto.getOrderItems()) {
             Product product = productRepository.findById(itemDto.getProductId())
-                    .orElseThrow(() -> new DataNotFoundException("Product not found"));
+                    .orElseThrow(() -> new DataNotFoundException("Product not found."));
 
             OrderItem item = OrderItem.builder()
                     .product(product)
@@ -59,10 +70,19 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderResponseDto getOrderById(Long id) {
-        return orderRepository.findById(id)
-                .map(orderMapper::toDto)
-                .orElseThrow(() -> new DataNotFoundException("Order " + id + " not found."));
+    public OrderResponseDto getOrderById(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new DataNotFoundException("Order " + orderId + "not found."));
+
+        Long authenticatedUserId = SecurityUtils.getAuthenticatedUserId();
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !order.getUser().getId().equals(authenticatedUserId)) {
+            throw new AccessDeniedException("You do not have permission to view this order.");
+        }
+        return orderMapper.toDto(order);
     }
 
     @Transactional(readOnly = true)
@@ -84,6 +104,15 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new DataNotFoundException("Order " + orderId + " not found."));
 
+        Long authenticatedUserId = SecurityUtils.getAuthenticatedUserId();
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !order.getUser().getId().equals(authenticatedUserId)) {
+            throw new AccessDeniedException("You do not have permission to cancel this order.");
+        }
+
         if (order.getStatus() == OrderStatus.SHIPPED || order.getStatus() == OrderStatus.DELIVERED) {
             throw new IllegalStateException("Cannot cancel an order that has already been shipped or delivered.");
         }
@@ -104,6 +133,10 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
         return orderMapper.toDto(savedOrder);
+    }
+
+    private String generateOrderNumber() {
+        return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
 }
