@@ -1,8 +1,21 @@
+### macOS ###
+.DS_Store
+
+### Postman ###
+.postman
+
+### Spring Boot ###
+application-local.properties
+
+### Maven ###
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+
+### SQLite database file ###
+*.db
 
 ### STS ###
 .apt_generated
