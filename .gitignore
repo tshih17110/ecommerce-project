@@ -5,7 +5,7 @@
 .postman
 
 ### Spring Boot ###
-application-local.properties
+application.properties
 
 ### Maven ###
 HELP.md
