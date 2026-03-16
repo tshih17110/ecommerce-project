@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.github.ecommerce_project.dtos.auth.AuthResponseDto;
+import com.github.ecommerce_project.dtos.auth.LoginRequestDto;
 import com.github.ecommerce_project.dtos.user.UserRequestDto;
 import com.github.ecommerce_project.dtos.user.UserResponseDto;
 import com.github.ecommerce_project.services.UserService;
@@ -31,6 +33,11 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(@Valid @RequestBody UserRequestDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerUser(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
+        return ResponseEntity.ok(userService.login(request));
     }
 
     @GetMapping("/{id}")
