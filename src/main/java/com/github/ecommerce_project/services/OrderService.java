@@ -87,14 +87,20 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new DataNotFoundException("Order " + orderId + "not found."));
 
-        Long authenticatedUserId = SecurityUtils.getAuthenticatedUserId();
-        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
-                .getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        if (!isAdmin && !order.getUser().getId().equals(authenticatedUserId)) {
+        if (!SecurityUtils.isAdmin() && !order.getUser().getId().equals(SecurityUtils.getAuthenticatedUserId())) {
             throw new AccessDeniedException("You do not have permission to view this order.");
         }
+
+        // Long authenticatedUserId = SecurityUtils.getAuthenticatedUserId();
+        // boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
+        // .getAuthorities().stream()
+        // .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        // if (!isAdmin && !order.getUser().getId().equals(authenticatedUserId)) {
+        // throw new AccessDeniedException("You do not have permission to view this
+        // order.");
+        // }
+
         return orderMapper.toDto(order);
     }
 
@@ -117,13 +123,8 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new DataNotFoundException("Order " + orderId + " not found."));
 
-        Long authenticatedUserId = SecurityUtils.getAuthenticatedUserId();
-        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
-                .getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        if (!isAdmin && !order.getUser().getId().equals(authenticatedUserId)) {
-            throw new AccessDeniedException("You do not have permission to cancel this order.");
+        if (!SecurityUtils.isAdmin() && !order.getUser().getId().equals(SecurityUtils.getAuthenticatedUserId())) {
+            throw new AccessDeniedException("You do not have permission to view this order.");
         }
 
         if (order.getStatus() == OrderStatus.SHIPPED || order.getStatus() == OrderStatus.DELIVERED) {
