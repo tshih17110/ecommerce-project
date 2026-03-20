@@ -1,6 +1,8 @@
 package com.github.ecommerce_project.services;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -41,6 +43,14 @@ public class OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User not found."));
 
+        List<Product> products = new ArrayList<>();
+        for (OrderItemRequestDto itemDto : newOrderDto.getOrderItems()) {
+            Product product = productRepository.findById(itemDto.getProductId())
+                    .orElseThrow(() -> new DataNotFoundException("Product not found."));
+            validateStock(product, itemDto.getQuantity());
+            products.add(product);
+        }
+
         Order order = new Order();
         order.setUser(user);
         order.setStatus(OrderStatus.PENDING);
@@ -51,8 +61,6 @@ public class OrderService {
         for (OrderItemRequestDto itemDto : newOrderDto.getOrderItems()) {
             Product product = productRepository.findById(itemDto.getProductId())
                     .orElseThrow(() -> new DataNotFoundException("Product not found."));
-
-            validateStock(product, itemDto.getQuantity());
 
             product.setStockQuantity(product.getStockQuantity() - itemDto.getQuantity());
             productRepository.save(product);
