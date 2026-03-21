@@ -28,10 +28,11 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
 
     private final OrderService orderService;
+    private final SecurityUtils securityUtils;
 
     @PostMapping
     public ResponseEntity<OrderResponseDto> createOrder(@Valid @RequestBody OrderRequestDto request) {
-        Long userId = SecurityUtils.getAuthenticatedUserId();
+        Long userId = securityUtils.getAuthenticatedUserId();
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(userId, request));
     }
 
@@ -42,7 +43,7 @@ public class OrderController {
 
     @GetMapping("/my-orders")
     public ResponseEntity<Page<OrderResponseDto>> getMyOrders(Pageable pageable) {
-        Long userId = SecurityUtils.getAuthenticatedUserId();
+        Long userId = securityUtils.getAuthenticatedUserId();
         return ResponseEntity.ok(orderService.getUserOrders(userId, pageable));
     }
 

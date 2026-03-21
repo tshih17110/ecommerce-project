@@ -8,7 +8,6 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +36,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final OrderMapper orderMapper;
+    private final SecurityUtils securityUtils;
 
     @Transactional
     public OrderResponseDto createOrder(Long userId, OrderRequestDto newOrderDto) {
@@ -87,19 +87,9 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new DataNotFoundException("Order " + orderId + "not found."));
 
-        if (!SecurityUtils.isAdmin() && !order.getUser().getId().equals(SecurityUtils.getAuthenticatedUserId())) {
+        if (!securityUtils.isAdmin() && !order.getUser().getId().equals(securityUtils.getAuthenticatedUserId())) {
             throw new AccessDeniedException("You do not have permission to view this order.");
         }
-
-        // Long authenticatedUserId = SecurityUtils.getAuthenticatedUserId();
-        // boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
-        // .getAuthorities().stream()
-        // .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        // if (!isAdmin && !order.getUser().getId().equals(authenticatedUserId)) {
-        // throw new AccessDeniedException("You do not have permission to view this
-        // order.");
-        // }
 
         return orderMapper.toDto(order);
     }
@@ -123,7 +113,7 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new DataNotFoundException("Order " + orderId + " not found."));
 
-        if (!SecurityUtils.isAdmin() && !order.getUser().getId().equals(SecurityUtils.getAuthenticatedUserId())) {
+        if (!securityUtils.isAdmin() && !order.getUser().getId().equals(securityUtils.getAuthenticatedUserId())) {
             throw new AccessDeniedException("You do not have permission to view this order.");
         }
 

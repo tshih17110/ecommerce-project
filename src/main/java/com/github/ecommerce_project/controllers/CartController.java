@@ -24,34 +24,35 @@ import lombok.RequiredArgsConstructor;
 public class CartController {
 
     private final CartService cartService;
+    private final SecurityUtils securityUtils;
 
     @GetMapping
     public ResponseEntity<CartResponseDto> getMyCart() {
-        Long userId = SecurityUtils.getAuthenticatedUserId();
+        Long userId = securityUtils.getAuthenticatedUserId();
         return ResponseEntity.ok(cartService.getCartByUserId(userId));
     }
 
     @PostMapping("/items")
     public ResponseEntity<CartResponseDto> addItem(@Valid @RequestBody CartItemRequestDto request) {
-        Long userId = SecurityUtils.getAuthenticatedUserId();
+        Long userId = securityUtils.getAuthenticatedUserId();
         return ResponseEntity.status(HttpStatus.CREATED).body(cartService.addItemToCart(userId, request));
     }
 
     @PutMapping("/items")
     public ResponseEntity<CartResponseDto> updateItemQuantity(@Valid @RequestBody CartItemRequestDto request) {
-        Long userId = SecurityUtils.getAuthenticatedUserId();
+        Long userId = securityUtils.getAuthenticatedUserId();
         return ResponseEntity.ok(cartService.updateItemQuantity(userId, request));
     }
 
     @DeleteMapping("/items")
     public ResponseEntity<CartResponseDto> removeItem(@Valid @RequestBody CartItemRequestDto request) {
-        Long userId = SecurityUtils.getAuthenticatedUserId();
+        Long userId = securityUtils.getAuthenticatedUserId();
         return ResponseEntity.ok(cartService.removeItemFromCart(userId, request));
     }
 
     @DeleteMapping
     public ResponseEntity<Void> clearCart() {
-        Long userId = SecurityUtils.getAuthenticatedUserId();
+        Long userId = securityUtils.getAuthenticatedUserId();
         cartService.clearCart(userId);
         return ResponseEntity.noContent().build();
     }

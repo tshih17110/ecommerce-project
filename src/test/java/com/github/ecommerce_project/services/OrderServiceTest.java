@@ -1,8 +1,10 @@
 package com.github.ecommerce_project.services;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,7 +21,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import com.github.ecommerce_project.dtos.order.OrderRequestDto;
 import com.github.ecommerce_project.dtos.order.OrderResponseDto;
@@ -33,21 +37,21 @@ import com.github.ecommerce_project.models.enums.OrderStatus;
 import com.github.ecommerce_project.repositories.OrderRepository;
 import com.github.ecommerce_project.repositories.ProductRepository;
 import com.github.ecommerce_project.repositories.UserRepository;
+import com.github.ecommerce_project.utils.SecurityUtils;
 
 @ExtendWith(MockitoExtension.class)
 public class OrderServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
-
     @Mock
     private ProductRepository productRepository;
-
     @Mock
     private UserRepository userRepository;
-
     @Mock
     private OrderMapper orderMapper;
+    @Mock
+    private SecurityUtils securityUtils;
 
     @InjectMocks
     private OrderService orderService;
@@ -225,6 +229,50 @@ public class OrderServiceTest {
         @Test
         @DisplayName("Throws when order not found")
         void getOrderById_shouldThrow_whenOrderNotFound() {
+            when(orderRepository.findById(1L)).thenReturn(Optional.empty());
+            assertThrows(DataNotFoundException.class, () -> orderService.getOrderById(1L));
+        }
+
+        @Test
+        @DisplayName("Throws AccessDeniedException when caller is not admin or order owner")
+        void getOrderById_shouldThrow_whenCallerIsNotAuthorized() {
+            User owner = User.builder().id(2L).build();
+            Order order = new Order();
+            order.setUser(owner);
+
+            when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+            when(securityUtils.isAdmin()).thenReturn(false);
+            when(securityUtils.getAuthenticatedUserId()).thenReturn(99L);
+
+            assertThrows(AccessDeniedException.class, () -> orderService.getOrderById(1L));
+        }
+
+        @Test
+        @DisplayName("Returns OrderResponseDTO when caller is authorized owner")
+        void getOrderById_shouldReturnDto_whenCallerIsOwner() {
+            Order order = new Order();
+            order.setUser(user);
+
+            when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+            when(orderMapper.toDto(order)).thenReturn(new OrderResponseDto());
+            when(securityUtils.isAdmin()).thenReturn(false);
+            when(securityUtils.getAuthenticatedUserId()).thenReturn(1L);
+
+            assertDoesNotThrow(() -> orderService.getOrderById(1L));
+        }
+
+        @Test
+        @DisplayName("Returns OrderResponseDTO when caller is admin")
+        void getOrderById_shouldReturnDto_whenCallerIsAdmin() {
+            User owner = User.builder().id(2L).build();
+            Order order = new Order();
+            order.setUser(owner);
+
+            when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+            when(orderMapper.toDto(order)).thenReturn(new OrderResponseDto());
+            when(securityUtils.isAdmin()).thenReturn(true);
+
+            assertDoesNotThrow(() -> orderService.getOrderById(1L));
 
         }
 
