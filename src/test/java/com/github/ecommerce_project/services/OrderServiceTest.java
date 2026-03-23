@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,8 +20,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import com.github.ecommerce_project.dtos.order.OrderRequestDto;
@@ -277,4 +279,32 @@ public class OrderServiceTest {
         }
 
     }
+
+    @Nested
+    @DisplayName("getUserOrders")
+    class GetUserOrders {
+
+        @Test
+        @DisplayName("Returns mapped page of orders for given user ID")
+        void getUserOrders_shouldReturnPageDto_whenCalled() {
+
+            Order order = new Order();
+            OrderResponseDto orderResponseDto = new OrderResponseDto();
+            Pageable pageable = PageRequest.of(0, 10);
+
+            Page<Order> orderPage = new PageImpl<>(List.of(order), pageable, 1);
+
+            when(orderRepository.findByUserId(1L, pageable)).thenReturn(orderPage);
+            when(orderMapper.toDto(order)).thenReturn(orderResponseDto);
+
+            Page<OrderResponseDto> result = orderService.getUserOrders(1L, pageable);
+
+            assertEquals(1, result.getTotalElements());
+            assertEquals(1, result.getContent().size());
+            verify(orderRepository).findByUserId(1L, pageable);
+
+        }
+
+    }
+
 }
