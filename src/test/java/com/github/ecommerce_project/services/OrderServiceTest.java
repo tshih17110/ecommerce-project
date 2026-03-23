@@ -17,6 +17,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -33,6 +35,7 @@ import com.github.ecommerce_project.dtos.orderItem.OrderItemRequestDto;
 import com.github.ecommerce_project.exceptions.DataNotFoundException;
 import com.github.ecommerce_project.mapper.OrderMapper;
 import com.github.ecommerce_project.models.Order;
+import com.github.ecommerce_project.models.OrderItem;
 import com.github.ecommerce_project.models.Product;
 import com.github.ecommerce_project.models.User;
 import com.github.ecommerce_project.models.enums.OrderStatus;
@@ -303,6 +306,145 @@ public class OrderServiceTest {
             assertEquals(1, result.getContent().size());
             verify(orderRepository).findByUserId(1L, pageable);
 
+        }
+
+    }
+
+    @Nested
+    @DisplayName("updateStatus")
+    class UpdateStatus {
+
+        @Test
+        @DisplayName("Throws when order not found")
+        void updateStatus_shouldThrow_whenOrderNotFound() {
+            when(orderRepository.findById(99L)).thenReturn(Optional.empty());
+            assertThrows(DataNotFoundException.class, () -> orderService.updateStatus(99L, OrderStatus.PROCESSING));
+        }
+
+        @Test
+        @DisplayName("Updates order status and saves")
+        void updateStatus_shouldUpdateStatusAndSave_whenOrderFound() {
+
+            Order order = new Order();
+            order.setUser(user);
+            order.setId(1L);
+            order.setStatus(OrderStatus.SHIPPED);
+
+            when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+            when(orderRepository.save(any(Order.class))).thenReturn(order);
+            when(orderMapper.toDto(any(Order.class))).thenReturn(new OrderResponseDto());
+
+            orderService.updateStatus(1L, OrderStatus.DELIVERED);
+
+            assertEquals(OrderStatus.DELIVERED, order.getStatus());
+            verify(orderRepository).save(order);
+        }
+    }
+
+    @Nested
+    @DisplayName("cancelOrder")
+    class CancelOrder {
+
+        private Order order;
+
+        @BeforeEach
+        void setUp() {
+            Product product2 = Product.builder()
+                    .id(2L)
+                    .stockQuantity(10)
+                    .price(new BigDecimal("10.00"))
+                    .build();
+
+            OrderItem item1 = OrderItem.builder()
+                    .product(product)
+                    .quantity(2)
+                    .build();
+
+            OrderItem item2 = OrderItem.builder()
+                    .product(product2)
+                    .quantity(1)
+                    .build();
+
+            order = new Order();
+            order.setId(1L);
+            order.setUser(user);
+            order.setStatus(OrderStatus.PENDING);
+            order.setOrderItems(List.of(item1, item2));
+        }
+
+        @Test
+        @DisplayName("Throws when order not found")
+        void cancelOrder_shouldThrow_whenOrderNotFound() {
+            when(orderRepository.findById(99L)).thenReturn(Optional.empty());
+            assertThrows(DataNotFoundException.class, () -> orderService.cancelOrder(99L));
+        }
+
+        @Test
+        @DisplayName("Throws when caller is not admin and not order owner")
+        void cancelOrder_shouldThrow_whenCallerIsNotAuthorized() {
+            when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+            when(securityUtils.isAdmin()).thenReturn(false);
+            when(securityUtils.getAuthenticatedUserId()).thenReturn(99L);
+
+            assertThrows(AccessDeniedException.class, () -> orderService.cancelOrder(1L));
+        }
+
+        @Test
+        @DisplayName("Throws AccessDeniedException when caller is not admin or order owner")
+        void getOrderById_shouldThrow_whenCallerIsNotAuthorized() {
+            User owner = User.builder().id(2L).build();
+            Order order = new Order();
+            order.setUser(owner);
+
+            when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+            when(securityUtils.isAdmin()).thenReturn(false);
+            when(securityUtils.getAuthenticatedUserId()).thenReturn(99L);
+
+            assertThrows(AccessDeniedException.class, () -> orderService.getOrderById(1L));
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = OrderStatus.class, names = { "SHIPPED", "DELIVERED", "CANCELLED" })
+        @DisplayName("Throws when status")
+        void cancelOrder_shouldThrow_whenOrderStatusCannotBeCancelled(OrderStatus status) {
+            order.setStatus(status);
+
+            when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+            when(securityUtils.isAdmin()).thenReturn(true);
+
+            assertThrows(IllegalStateException.class, () -> orderService.cancelOrder(1L));
+        }
+
+        @Test
+        @DisplayName("Restores stock for each item when cancellation is successful")
+        void cancelOrder_shouldRestoreStock_whenOrderIsCancelled() {
+            when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+            when(securityUtils.isAdmin()).thenReturn(true);
+            when(orderRepository.save(any(Order.class))).thenReturn(order);
+            when(orderMapper.toDto(any(Order.class))).thenReturn(new OrderResponseDto());
+
+            orderService.cancelOrder(1L);
+
+            assertEquals(12, order.getOrderItems().get(0).getProduct().getStockQuantity());
+            assertEquals(11, order.getOrderItems().get(1).getProduct().getStockQuantity());
+
+            verify(productRepository).save(order.getOrderItems().get(0).getProduct());
+            verify(productRepository).save(order.getOrderItems().get(1).getProduct());
+            verify(orderRepository).save(order);
+        }
+
+        @Test
+        @DisplayName("Sets status to CANCELLED and saves when cancellation is successful")
+        void cancelOrder_shouldSetStatusToCancelled_whenOrderIsCancelled() {
+            when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+            when(securityUtils.isAdmin()).thenReturn(true);
+            when(orderRepository.save(any(Order.class))).thenReturn(order);
+            when(orderMapper.toDto(any(Order.class))).thenReturn(new OrderResponseDto());
+
+            orderService.cancelOrder(1L);
+
+            assertEquals(OrderStatus.CANCELLED, order.getStatus());
+            verify(orderRepository).save(order);
         }
 
     }
