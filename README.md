@@ -25,6 +25,14 @@ openssl rand -base64 32
 
 Set the generated value as `jwt.secret` in `application-local.properties`
 
+### Running tests
+
+Run all unit tests:
+
+```
+./mvnw test
+```
+
 ## API Endpoints
 
 ### Authentication
@@ -73,6 +81,17 @@ Set the generated value as `jwt.secret` in `application-local.properties`
 | GET    | /api/orders/user/{userId} | Admin         |
 | PATCH  | /api/orders/{id}/status   | Admin         |
 | PATCH  | /api/orders/{id}/cancel   | Admin, Owner  |
+
+## Unit Tests
+
+Unit tests written in JUnit and Mockito, focusing on service layer
+
+`OrderService`: order creation, stock deduction, status updates, cancellation, and access control
+
+IN PROGRESS: \
+`CartService`\
+`ProductService` \
+`UserService`
 
 ## Key Features
 
