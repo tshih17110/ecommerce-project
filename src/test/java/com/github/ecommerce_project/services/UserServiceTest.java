@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +19,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 
 import com.github.ecommerce_project.dtos.auth.AuthResponseDto;
@@ -241,6 +246,84 @@ public class UserServiceTest {
     @Nested
     @DisplayName("deleteUser")
     class DeleteUser {
+
+        @Test
+        @DisplayName("Throws when user ID not found")
+        void deleteUser_shouldThrow_whenUserIdNotFound() {
+            when(userRepository.existsById(1L)).thenReturn(false);
+            assertThrows(DataNotFoundException.class, () -> userService.deleteUser(1L));
+        }
+
+        @Test
+        @DisplayName("Delete user when valid id found")
+        void deleteUser_shouldDelete_whenUserIdFound() {
+            when(userRepository.existsById(1L)).thenReturn(true);
+            userService.deleteUser(1L);
+            verify(userRepository).deleteById(1L);
+        }
+    }
+
+    @Nested
+    @DisplayName("getUserById")
+    class GetUserById {
+
+        @Test
+        @DisplayName("Returns DTO when user found")
+        void getUserById_shouldReturnDto_whenUserFound() {
+
+            UserResponseDto expectedDto = UserResponseDto.builder()
+                    .id(1L)
+                    .username("testuser")
+                    .email("test@example.com")
+                    .build();
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            when(userMapper.toDto(user)).thenReturn(expectedDto);
+
+            UserResponseDto result = userService.getUserById(1L);
+
+            assertEquals(expectedDto.getId(), result.getId());
+            assertEquals(expectedDto.getUsername(), result.getUsername());
+            assertEquals(expectedDto.getEmail(), result.getEmail());
+        }
+
+        @Test
+        @DisplayName("Throws when user not found")
+        void getUserById_shouldThrow_whenUserNotFound() {
+            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+            assertThrows(DataNotFoundException.class, () -> userService.getUserById(1L));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("getAllUsers")
+    class GetAllUsers {
+
+        @Test
+        @DisplayName("Returns page with users from repository")
+        void getAllUsers_shouldReturnPage_whenCalled() {
+
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<User> userPage = new PageImpl<>(List.of(user), pageable, 1);
+
+            UserResponseDto expectedDto = UserResponseDto.builder()
+                    .id(1L)
+                    .username("testuser")
+                    .email("test@example.com")
+                    .build();
+
+            when(userRepository.findAll(pageable)).thenReturn(userPage);
+            when(userMapper.toDto(user)).thenReturn(expectedDto);
+
+            Page<UserResponseDto> result = userService.getAllUsers(pageable);
+
+            assertEquals(1, result.getTotalElements());
+            assertEquals(1, result.getContent().size());
+            assertEquals("testuser", result.getContent().get(0).getUsername());
+            verify(userRepository).findAll(pageable);
+
+        }
 
     }
 
