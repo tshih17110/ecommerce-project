@@ -86,12 +86,12 @@ Run all unit tests:
 
 Unit tests written in JUnit and Mockito, focusing on service layer
 
-`OrderService`: order creation, stock deduction, status updates, cancellation, and access control
+`OrderService`: order creation, stock deduction, status updates, cancellation, and access control \
+`UserService`: user registration, login, user updates, deletion, retrieval
 
 IN PROGRESS: \
 `CartService`\
-`ProductService` \
-`UserService`
+`ProductService`
 
 ## Key Features
 
