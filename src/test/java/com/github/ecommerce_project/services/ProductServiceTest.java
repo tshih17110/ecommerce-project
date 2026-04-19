@@ -244,8 +244,3 @@ public class ProductServiceTest {
     }
 
 }
-
-// **`deleteProduct`**
-
-// - Throws when product ID not found
-// - Calls `deleteById` when product exists
